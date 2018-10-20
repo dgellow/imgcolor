@@ -95,7 +95,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 				<p>16-bin histogram:</p>
 				<pre>%s</pre>
 				<p>Color histogram:</p>
-				<pre>%s</pre>
+				<p>%s</p>
 				<p>Go back to <a href="/">homepage</a></p>
 			</body>
 		</html>
@@ -204,9 +204,12 @@ func histogramColor(img image.Image) string {
 		}
 	}
 
-	return fmt.Sprintf("most frequent (bin, mean-val): r=(%d, %d), g=(%d, %d), b=(%d, %d)",
+	return fmt.Sprintf(`most frequent (bin, mean-val): r=(%d, %d), g=(%d, %d), b=(%d, %d) => <p style="background: rgb(%d, %d, %d)">main</p>`,
 		mostFrequentR, (mostFrequentR<<shift)+mean,
 		mostFrequentG, (mostFrequentG<<shift)+mean,
 		mostFrequentB, (mostFrequentB<<shift)+mean,
+		int((float64((mostFrequentR<<shift)+mean)/float64(maxColor))*255),
+		int((float64((mostFrequentG<<shift)+mean)/float64(maxColor))*255),
+		int((float64((mostFrequentB<<shift)+mean)/float64(maxColor))*255),
 	)
 }
