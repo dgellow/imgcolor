@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 )
@@ -15,6 +16,7 @@ type flashMessage struct {
 func writeFlash(w http.ResponseWriter, name string, v interface{}) error {
 	b, err := json.Marshal(v)
 	if err != nil {
+		log.Println("error: failed to write flash message:", err)
 		return err
 	}
 

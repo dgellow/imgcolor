@@ -99,13 +99,14 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	maxResults, err := strconv.Atoi(r.FormValue("max-results"))
 	if err != nil {
+		log.Println("failed to parse max-results as int: error:", err)
 		if err := writeFlash(w, flashSession, flashMessage{Error: "invalid setting max-results"}); err != nil {
-			log.Println("error: failed to parse max-results param as int:", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Location", "/")
 		w.WriteHeader(http.StatusFound)
+		return
 	}
 
 	file, _, err := r.FormFile("file")
@@ -118,7 +119,6 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("uploaded file: error:", err)
 		if err := writeFlash(w, flashSession, flashMessage{Error: "invalid file"}); err != nil {
-			log.Println("error: failed to write flash message:", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -132,7 +132,6 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("cannot decode image: error:", err)
 		if err := writeFlash(w, flashSession, flashMessage{Error: "invalid file"}); err != nil {
-			log.Println("error: failed to write flash message:", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -142,7 +141,6 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	res := mainColors(img, maxResults)
 	if err := writeFlash(w, flashSession, flashMessage{Results: res}); err != nil {
-		log.Println("error: failed to write flash message:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -152,7 +150,6 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mainColors(img image.Image, maxResults int) []Result {
-	log.Print("call mainColors")
 	q := newQuantizer(img, 14, 255.0)
 	q.Quantize()
 	freqs := q.MostFrequent(maxResults)
@@ -166,6 +163,5 @@ func mainColors(img image.Image, maxResults int) []Result {
 			},
 		}
 	}
-	log.Printf("mainColors: freqs=%#v, res=%#v", freqs, res)
 	return res
 }
