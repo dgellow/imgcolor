@@ -1,0 +1,203 @@
+<html>
+    <head>
+        <style>
+            /* Basic layout */
+            html {
+                font-family: sans-serif;
+            }
+            main {
+                margin: auto;
+                max-width: 800px;
+            }
+
+
+            /* Form */
+            fieldset, legend, input {
+                border-radius: 2px;
+            }
+            input[type="submit"],
+            input[type="file"],
+            legend {
+                color: white;
+                background-color: black;
+                padding: 5px 10px;
+                border: 0;
+                font-size: 14px;
+            }
+            legend {
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+            input[type="submit"] {
+                width: 260px;
+                margin: auto;
+                margin-top: 8px;
+            }
+            .submit-button {
+                text-align: center;
+            }
+
+            /* Form: source */
+            .source label,
+            .source input {
+                box-sizing: border-box;
+                display: inline-block;
+                width: 46%;
+                min-width: 300px;
+                font-size: .8rem;
+                padding: 4px;
+                margin-bottom: 4px;
+                margin-top: 4px;
+            }
+            .source input:invalid + span:after {
+                content: '✖';
+                color: #f00;
+                padding-left: 5px;
+            }
+            .source input:valid + span:after {
+                content: '✓';
+                color: #26b72b;
+                padding-left: 5px;
+            }
+
+            /* Form: settings */
+            .settings label {
+                font-size: .8rem;
+                display: block;
+                font-size: .8rem;
+                box-sizing: border-box;
+                padding: 4px;
+                margin-bottom: 4px;
+                margin-top: 4px;
+            }
+            .settings input[type="radio"] {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+
+                box-sizing: border-box;
+
+                display: inline-block;
+                border-radius: 50%;
+                width: 16px;
+                height: 16px;
+
+                border: 2px solid #999;
+                transition: 0.1s all linear;
+                outline: none;
+                margin-right: 5px;
+
+                position: relative;
+                top: 4px;
+            }
+            .settings input[type="radio"]:checked {
+                border: 6px solid black;
+            }
+            .settings input[type="radio"]:active {
+                border: 3px solid black;
+            }
+            .settings input[type="radio"]:hover:not(:checked):not(:active) {
+                border: 1px solid black;
+            }
+            .settings .set-of-radio-buttons {
+                display: flex;
+                flex-flow: wrap;
+                justify-content: center;
+            }
+            .settings .radio-button {
+                position: relative;
+                text-align: center;
+                width: 7%;
+                min-width: 60px;
+                height: 40px;
+                border: 1px solid black;
+                border-radius: 2px;
+                margin: 3px;
+            }
+            .settings .radio-button label {
+                position: absolute;
+                width: 100%;
+                height: 16px;
+                top: 0;
+                padding: 0;
+                padding-top: 26px;
+                margin: 0;
+                box-sizing: content-box;
+            }
+
+
+            /* Flash message: error */
+            .error {
+                background-color: rgb(247, 93, 93);
+                color: white;
+                padding: 40px;
+                margin: auto;
+                border-radius: 4px;
+            }
+
+            /* Flash message: results */
+            .results {
+                border: 1px solid black;
+                color: rgb(82, 82, 82);
+                padding: 40px;
+                border-radius: 4px;
+            }
+            .sample {
+                width: 60px;
+                height: 12px;
+                display: inline-block;
+            }
+        </style>
+    </head>
+	<body>
+        <main>
+            <h1>Color palette</h1>
+            <form enctype="multipart/form-data" action="/upload" name="fileupload" method="post">
+                <h2>Extract a color palette from an image</h2>
+                <fieldset class="source">
+                    <legend>Source</legend>
+                    <label for="file">Select an image file</label>
+                    <input type="file" id="file" name="file" accept=".jpg, .jpeg, .png"><span></span>
+                    <label for="url">… or use a link</label>
+                    <input type="url" id="url" name="url" placeholder="https://my.penguin.tld/image1.png"><span></span>
+                </fieldset>
+                <fieldset class="settings">
+                    <legend>Settings</legend>
+
+                    <label for="max-results">Max number of color in palette</label>
+                    <div class="set-of-radio-buttons">
+                        {{ range $index, $_ := n 10 }}
+                        {{ with $selected := 4 }}
+                        <div class="radio-button">
+                            <input type="radio" id="max-results-{{ inc $index }}" name="max-results" value="{{ inc $index }}" {{ if eq (inc $index) $selected }}checked{{ end }}>
+                            <label for="max-results-{{ inc $index }}">{{ inc $index }}</label>
+                        </div>
+                        {{ end }}
+                        {{ end }}
+                    </div>
+
+                </fieldset>
+                <div class="submit-button"><input type="submit" value="Send file"></div>
+            </form>
+
+            {{ if .Flash }}
+
+            {{ with .Flash.Error }}
+            <p class="error">An error occured: {{.Flash.Error}}</p>
+            {{ end }}
+
+            {{ with .Flash.Results }}
+            <div class="results">
+                <h2>Palette</h2>
+                {{ range $index, $res := . }}
+                {{ with .RGB }}
+                <p><span class="sample" style="background-color: rgb({{ .R }}, {{ .G }}, {{ .B }})"></span> rgb({{ .R }}, {{ .G }}, {{ .B }})</p>
+                {{ end }}
+                {{ end }}
+            </div>
+            {{ end }}
+
+            {{ end }}
+        </main>
+	</body>
+</html>
