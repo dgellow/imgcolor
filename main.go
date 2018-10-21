@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 const flashSession = "flash-session"
@@ -96,6 +97,17 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	maxResults, err := strconv.Atoi(r.FormValue("max-results"))
+	if err != nil {
+		if err := writeFlash(w, flashSession, flashMessage{Error: "invalid setting max-results"}); err != nil {
+			log.Println("error: failed to parse max-results param as int:", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Location", "/")
+		w.WriteHeader(http.StatusFound)
+	}
+
 	file, _, err := r.FormFile("file")
 	if err == http.ErrMissingFile {
 		log.Println("no file uploaded")
@@ -128,7 +140,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := mainColors(img)
+	res := mainColors(img, maxResults)
 	if err := writeFlash(w, flashSession, flashMessage{Results: res}); err != nil {
 		log.Println("error: failed to write flash message:", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -139,11 +151,11 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusFound)
 }
 
-func mainColors(img image.Image) []Result {
+func mainColors(img image.Image, maxResults int) []Result {
 	log.Print("call mainColors")
 	q := newQuantizer(img, 14, 255.0)
 	q.Quantize()
-	freqs := q.MostFrequent(3)
+	freqs := q.MostFrequent(maxResults)
 	res := make([]Result, len(freqs))
 	for i := range freqs {
 		res[i] = Result{
