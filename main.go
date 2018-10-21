@@ -30,7 +30,14 @@ type Result struct {
 }
 
 func main() {
-	indexPage = template.Must(template.ParseFiles("index.html.tmpl"))
+	indexPage = template.Must(template.New("index.html.tmpl").Funcs(template.FuncMap{
+		"n": func(n int) []struct{} {
+			return make([]struct{}, n)
+		},
+		"inc": func(n int) int {
+			return n + 1
+		},
+	}).ParseFiles("index.html.tmpl"))
 
 	http.HandleFunc("/upload", uploadHandler)
 	http.HandleFunc("/", indexHandler)
