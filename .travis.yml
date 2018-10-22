@@ -19,5 +19,4 @@ script:
 
 deploy:
   provider: gae
-  keyfile: deployment-creds.json.enc
   project: color-detection-service
