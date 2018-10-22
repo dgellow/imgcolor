@@ -9,41 +9,41 @@ import (
 // A color's RGBA method returns values in the range [0, 65535]
 const maxColor = 65535
 
-type entry struct {
+type Entry struct {
 	r     int
 	g     int
 	b     int
 	count int
 }
 
-type quantizer struct {
+type Quantizer struct {
 	scale     float64
 	image     image.Image
 	shift     uint
 	bins      int
 	mean      int
-	histogram []entry
+	histogram []Entry
 }
 
-func NewQuantizer(img image.Image, shift uint, scale float64) quantizer {
+func NewQuantizer(img image.Image, shift uint, scale float64) Quantizer {
 	if scale <= 0 {
 		scale = 1
 	}
 
 	bins := (maxColor >> shift) + 1
 
-	return quantizer{
+	return Quantizer{
 		scale: scale,
 		image: img,
 		// Shifting 65535 by e.g: 14 reduces it to the range [0, 3].
 		shift:     shift,
 		bins:      bins,
 		mean:      (1 << (shift - 1)) / 2,
-		histogram: []entry{},
+		histogram: []Entry{},
 	}
 }
 
-func (q *quantizer) Quantize() {
+func (q *Quantizer) Quantize() {
 	bounds := q.image.Bounds()
 
 	var multiDimHistogram = make([][][]int, q.bins)
@@ -72,30 +72,30 @@ func (q *quantizer) Quantize() {
 			for b := range multiDimHistogram[r][g] {
 				count := multiDimHistogram[r][g][b]
 				if count > 0 {
-					q.histogram = append(q.histogram, entry{r, g, b, count})
+					q.histogram = append(q.histogram, Entry{r, g, b, count})
 				}
 			}
 		}
 	}
 }
 
-func (q quantizer) Less(i int, j int) bool {
+func (q Quantizer) Less(i int, j int) bool {
 	e, f := q.histogram[i], q.histogram[j]
 	return e.count < f.count
 }
 
-func (q quantizer) Len() int {
+func (q Quantizer) Len() int {
 	return len(q.histogram)
 }
 
-func (q quantizer) Swap(i int, j int) {
+func (q Quantizer) Swap(i int, j int) {
 	e, f := q.histogram[i], q.histogram[j]
 	q.histogram[i], q.histogram[j] = f, e
 }
 
 // MostFrequent tries to get up to n most frequent entries in the histogram. A
 // result length of n isn't guaranteed as the histogram can have less than n entries.
-func (q quantizer) MostFrequent(n int) []entry {
+func (q Quantizer) MostFrequent(n int) []Entry {
 	if n <= 0 {
 		n = 1
 	}
@@ -105,15 +105,15 @@ func (q quantizer) MostFrequent(n int) []entry {
 
 	sort.Sort(sort.Reverse(q))
 
-	res := make([]entry, n)
+	res := make([]Entry, n)
 	for i := 0; i < n; i++ {
 		res[i] = q.applyScale(q.histogram[i])
 	}
 	return res
 }
 
-func (q quantizer) applyScale(e entry) entry {
-	return entry{
+func (q Quantizer) applyScale(e Entry) Entry {
+	return Entry{
 		r:     int(math.Round(float64(e.r<<q.shift+q.mean) / float64(maxColor) * q.scale)),
 		g:     int(math.Round(float64(e.g<<q.shift+q.mean) / float64(maxColor) * q.scale)),
 		b:     int(math.Round(float64(e.b<<q.shift+q.mean) / float64(maxColor) * q.scale)),
