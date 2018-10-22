@@ -13,7 +13,11 @@ import (
 	"strconv"
 )
 
-const flashSession = "flash-session"
+const (
+	flashSession           = "flash-session"
+	quantizerShift uint    = 14
+	quantizerScale float64 = 255.0
+)
 
 var indexPage *template.Template
 
@@ -150,7 +154,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mainColors(img image.Image, maxResults int) []Result {
-	q := NewQuantizer(img, 14, 255.0)
+	q := NewQuantizer(img, quantizerShift, quantizerScale)
 	q.Quantize()
 	freqs := q.MostFrequent(maxResults)
 	res := make([]Result, len(freqs))
