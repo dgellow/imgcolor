@@ -144,10 +144,23 @@
                 padding: 40px;
                 border-radius: 4px;
             }
+            .results span {
+                padding-right: 4px;
+                padding-left: 4px;
+                display: inline-block;
+                font-family: monospace;
+            }
             .sample {
                 width: 60px;
                 height: 12px;
-                display: inline-block;
+            }
+            .rgb {
+                width: 190px;
+                text-align: right;
+            }
+            .ratio {
+                width: 34px;
+                text-align: right;
             }
         </style>
     </head>
@@ -192,9 +205,7 @@
             <div class="results">
                 <h2>Palette</h2>
                 {{ range $index, $res := . }}
-                {{ with .RGB }}
-                <p><span class="sample" style="background-color: rgb({{ .R }}, {{ .G }}, {{ .B }})"></span> rgb({{ .R }}, {{ .G }}, {{ .B }})</p>
-                {{ end }}
+                <p>{{ with .RGB }}<span class="sample" style="background-color: rgb({{ .R }}, {{ .G }}, {{ .B }})"></span> <span class="rgb">rgb({{ .R }}, {{ .G }}, {{ .B }})</span>{{ end }} <span class="ratio">{{ printf "%.0f" .Ratio }}%</span></p>
                 {{ end }}
             </div>
             {{ end }}

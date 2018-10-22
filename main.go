@@ -11,12 +11,14 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
 
 const (
 	flashSession           = "flash-session"
-	quantizerShift uint    = 14
+	quantizerShift uint    = 13
 	quantizerScale float64 = 255.0
+	minRatio               = 1.0
 )
 
 var indexPage *template.Template
@@ -30,8 +32,8 @@ type RGB struct {
 
 // Result ...
 type Result struct {
-	RGB RGB    `json:"rgb"`
-	Hex string `json:"hex"`
+	RGB   RGB     `json:"rgb"`
+	Ratio float64 `json:"ratio"`
 }
 
 func main() {
@@ -154,18 +156,34 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mainColors(img image.Image, maxResults int) []Result {
+	size := img.Bounds().Size()
+	total := size.X * size.Y
+
+	start := time.Now()
+
 	q := NewQuantizer(img, quantizerShift, quantizerScale)
 	q.Quantize()
 	freqs := q.MostFrequent(maxResults)
-	res := make([]Result, len(freqs))
+
+	end := time.Now()
+	log.Println("qantize duration:", end.Sub(start))
+
+	var res []Result
 	for i := range freqs {
-		res[i] = Result{
+		ratio := (float64(freqs[i].count) / float64(total)) * 100.0
+		if ratio < minRatio {
+			continue
+		}
+
+		r := Result{
 			RGB: RGB{
 				R: freqs[i].r,
 				G: freqs[i].g,
 				B: freqs[i].b,
 			},
+			Ratio: ratio,
 		}
+		res = append(res, r)
 	}
 	return res
 }
