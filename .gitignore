@@ -1,5 +1,6 @@
-color-detection
+imgcolor
 *.jpg
 *.jpeg
 *.png
-
+*.test
+.DS_Store
