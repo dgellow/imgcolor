@@ -6,7 +6,7 @@ go:
 
 before_install:
   - openssl aes-256-cbc -K $encrypted_6a8b95daeded_key -iv $encrypted_6a8b95daeded_iv
-    -in deployment-creds.json.enc -out deployment-creds.json
+    -in deployment-creds.json.enc -out service-account.json
     -d
 
 install:
