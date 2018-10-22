@@ -25,7 +25,7 @@ type quantizer struct {
 	histogram []entry
 }
 
-func newQuantizer(img image.Image, shift uint, scale float64) quantizer {
+func NewQuantizer(img image.Image, shift uint, scale float64) quantizer {
 	if scale <= 0 {
 		scale = 1
 	}

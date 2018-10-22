@@ -150,7 +150,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func mainColors(img image.Image, maxResults int) []Result {
-	q := newQuantizer(img, 14, 255.0)
+	q := NewQuantizer(img, 14, 255.0)
 	q.Quantize()
 	freqs := q.MostFrequent(maxResults)
 	res := make([]Result, len(freqs))
